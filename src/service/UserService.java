@@ -35,8 +35,8 @@ public class UserService {
     // Save students to CSV data file
     private void saveUsers() {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH))) {
-            for (User std : users) {
-                bw.write(std.toString());
+            for (User user : users) {
+                bw.write(user.toString());
                 bw.newLine();
             }
         } catch (IOException e) {

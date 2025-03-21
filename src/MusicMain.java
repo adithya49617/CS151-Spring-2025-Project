@@ -3,15 +3,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import service.UserService;
-
-//import service.StudentService;
+import service.ArtistService;
+import service.SongService;
 
 public class MusicMain {
     public static void main(String[] args) {
 
         System.out.printf("Hello and welcome!");
         UserService userService = new UserService();
-
+        ArtistService artistService = new ArtistService();
+        SongService songService = new SongService();
         Scanner scanner = new Scanner(System.in);
         while (true) {
             System.out.println("\nMusic Management System Menu:");
@@ -29,15 +30,13 @@ public class MusicMain {
 
                 switch (choice) {
                     case 1:
-                        System.out.print("before calling manageStudent ");
                         userService.manageUser();
-                        System.out.print("after calling manageStudent ");
                         break;
                     case 2:
-                        // teacherService.manageTeachers(scanner);
+                        artistService.manageArtist();
                         break;
                     case 3:
-                        //  classroomService.manageClassrooms(scanner);
+                        songService.manageSongs();
                         break;
                     case 4:
                         //   courseService.manageCourses(scanner);
