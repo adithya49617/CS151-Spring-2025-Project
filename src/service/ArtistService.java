@@ -3,6 +3,7 @@ package service;
 import java.io.*;
 import java.util.*;
 import model.Artist;
+import utility.MusicUtility;
 
 public class ArtistService {
     private List<Artist> artists = new ArrayList<>();
@@ -57,34 +58,23 @@ public class ArtistService {
     }
 
     // Add a new artist
-    public void addArtist(Scanner scanner) {
-        System.out.print("Enter artist ID: ");
-        String artistID = scanner.nextLine();  // Artist ID
-
-        System.out.print("Enter artist date of birth: ");
-        String artistDob = scanner.nextLine();   // Artist DOB
-
-        System.out.print("Enter artist first name: ");
-        String artistFirstName = scanner.nextLine();   // Artist First Name
-
-        System.out.print("Enter artist last name: ");
-        String artistLastName = scanner.nextLine();   // Artist Last Name
-
-        System.out.print("Enter artist Email: ");
-        String artistEmail = scanner.nextLine();   // Artist Email
-
-        System.out.print("Enter artist gender: ");
-        String artistGender = scanner.nextLine();   // Artist Gender
+    public String createArtist() {
+        String artistID = MusicUtility.readString("Enter artist ID: "); // Artist ID
+        String artistDob = MusicUtility.readString("Enter artist date of birth: "); // Artist DOB
+        String artistFirstName = MusicUtility.readString("Enter artist first name: "); // Artist First Name
+        String artistLastName = MusicUtility.readString("Enter artist last name: "); // Artist Last Name
+        String artistEmail = MusicUtility.readString("Enter artist Email: "); // Artist Email
+        String artistGender = MusicUtility.readString("Enter artist gender: "); // Artist gender
 
         artists.add(new Artist(artistID, artistDob, artistFirstName, artistLastName, artistEmail, artistGender));
         saveArtists();
         System.out.println("Artist added successfully!");
+        return artistID;
     }
 
     // Search artist by ID
-    public void searchArtistById(Scanner scanner) {
-        System.out.print("Enter Artist ID: ");
-        String artistId = scanner.nextLine();
+    public void searchArtistById() {
+        String artistId = MusicUtility.readString("Enter artist ID: "); // Artist ID
 
         for (Artist tempArtist : artists) {
             if (tempArtist.getArtistId().equals(artistId)) {
@@ -96,21 +86,12 @@ public class ArtistService {
     }
 
     // Update artist
-    public void updateArtist(Scanner scanner) {
-        System.out.print("Enter Artist ID to update: ");
-        String artistId = scanner.nextLine();
-
+    public void updateArtistDetails(String artistId) {
         for (Artist artist : artists) {
             if (artist.getArtistId().equals(artistId)) {
-                System.out.print("Enter First Name to Update: ");
-                artist.setArtistFirstName(scanner.nextLine());
-
-                System.out.print("Enter Last Name to Update: ");
-                artist.setArtistLastName(scanner.nextLine());
-
-                System.out.print("Enter Email to Update: ");
-                artist.setArtistEmail(scanner.nextLine());
-
+                artist.setArtistFirstName(MusicUtility.readString("Enter First Name to Update: "));
+                artist.setArtistFirstName(MusicUtility.readString("Enter Last Name to Update: "));
+                artist.setArtistFirstName(MusicUtility.readString("Enter Email to Update: "));
                 saveArtists();
                 System.out.println("Artist updated successfully!");
                 return;
@@ -119,40 +100,52 @@ public class ArtistService {
         System.out.println("Artist not found.");
     }
 
+    public void addSong(String artistId) {
+        SongService songService = new SongService();
+        songService.addSong(artistId);
+    }
+
+    public void editSong(String artistId) {
+        SongService songService = new SongService();
+        songService.editSong(artistId);
+    }
+
+    public void deleteSong(String artistId) {
+        SongService songService = new SongService();
+        songService.deleteSong(artistId);
+    }
+
     // Manage artist options menu
-    public void manageArtist() {
+    public void showArtistMenu(String artistId) {
         Scanner scanner = new Scanner(System.in);
         while (true) {
-            System.out.println("\n--- Manage Artist ---");
-            System.out.println("1. Add Artist");
-            System.out.println("2. Search Artist");
-            System.out.println("3. Update Artist");
-            System.out.println("4. Return to Main Menu\n");
-            System.out.print("Enter your choice: ");
+            System.out.println("Manage Artist");
+            System.out.println("--------------------------------");
+            System.out.println("1. Update Artist Details");
+            System.out.println("2. Add Song");
+            System.out.println("3. Edit Song");
+            System.out.println("4. Delete Song");
+            System.out.println("5. Return to Main Menu\n");
 
-            if (scanner.hasNextInt()) {
-                int artistChoice = scanner.nextInt();
-                scanner.nextLine(); // Consume newline
-
-                switch (artistChoice) {
-                    case 1:
-                        addArtist(scanner);
-                        break;
-                    case 2:
-                        searchArtistById(scanner);
-                        break;
-                    case 3:
-                        updateArtist(scanner);
-                        break;
-                    case 4:
-                        System.out.println("Exiting from Artist Service");
-                        return;
-                    default:
-                        System.out.println("Invalid choice! Try again.");
-                }
-            } else {
-                System.out.println("Invalid input. Please enter a number.");
-                scanner.next(); // Consume invalid input
+            int artistChoice = MusicUtility.readInt("Enter your choice: ");
+            switch (artistChoice) {
+                case 1:
+                    updateArtistDetails(artistId);
+                    break;
+                case 2:
+                    addSong(artistId);
+                    break;
+                case 3:
+                    editSong(artistId);
+                    break;
+                case 4:
+                    deleteSong(artistId);
+                    break;
+                case 5:
+                    System.out.println("Exiting from Artist Service");
+                    return;
+                default:
+                    System.out.println("Invalid choice! Try again.");
             }
         }
     }

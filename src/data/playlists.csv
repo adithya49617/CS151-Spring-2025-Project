@@ -1,0 +1,5 @@
+PlaylistID,PlaylistName,PlaylistCreator,PlaylistGenre,UserID,SongIDs
+PL001,Chill Vibes,Taylor Swift,Pop,U1001,"S1001
+PL002,Gym Pump Up,Drake,Hip-Hop,U1002,"S1004
+PL003,Romantic Nights,Ariana Grande,R&B,U1003,S1002|S1003|S1005
+

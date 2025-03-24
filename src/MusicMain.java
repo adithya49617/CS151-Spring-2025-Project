@@ -1,10 +1,12 @@
-//import utility.FileHandler;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import service.UserService;
 import service.ArtistService;
 import service.SongService;
+import service.PlaylistService;
+import service.PaymentService;
+import utility.MusicUtility;
 
 public class MusicMain {
     public static void main(String[] args) {
@@ -12,55 +14,50 @@ public class MusicMain {
         System.out.printf("Hello and welcome!");
         UserService userService = new UserService();
         ArtistService artistService = new ArtistService();
-        SongService songService = new SongService();
-        Scanner scanner = new Scanner(System.in);
-        while (true) {
-            System.out.println("\nMusic Management System Menu:");
-            System.out.println("1. Manage User");
-            System.out.println("2. Manage Artist");
-            System.out.println("3. Manage Song");
-            System.out.println("4. Manage Playlist");
-            System.out.println("5. Manage Payment");
-            System.out.println("6. Manage Library");
-            System.out.println("7. Exit\n");
-            System.out.print("Enter your choice: ");
+        System.out.println("Welcome to the Music Application!");
+        String accessChoice = MusicUtility.readString("Do you already have an account? (Y/N): ");
 
-            if (scanner.hasNextInt()) {
-                int choice = scanner.nextInt();
+        String accountID = null;
+        Boolean accountExistsFlag ;
+        String userType = null;
 
-                switch (choice) {
-                    case 1:
-                        userService.manageUser();
-                        break;
-                    case 2:
-                        artistService.manageArtist();
-                        break;
-                    case 3:
-                        songService.manageSongs();
-                        break;
-                    case 4:
-                        //   courseService.manageCourses(scanner);
-                        break;
-                    case 5:
-                        //   gradeService.manageGrades(scanner);
-                        break;
-                    case 6:
-                        //   attendanceService.manageAttendance(scanner);
-                        break;
-                    case 7:
-                        System.out.println("Exiting from main ");
-                        scanner.close();
-                        System.exit(0);
-                        break;
-                    default:
-                        System.out.println("Invalid choice! Try again.");
+        if (accessChoice.equals("Y")) //Account exists
+        {
+            {
+                accountID = MusicUtility.readString("Enter your User ID: ");
+                String userPassword = MusicUtility.readString("Enter your User Password: ");
+                boolean userExists = userService.checkUserExists(accountID);
+                boolean artistExists = artistService.checkAritistExists(accountID);
+
+                if(userExists || artistExists) {
+                    accountExistsFlag = true;
+
+                    if(accountExistsFlag) {
+                        userType = "R";
+                    } else {
+                        userType = "A";
+                    }
                 }
-            }  else {
-                System.out.println("Invalid input. Please enter a number.");
-                scanner.next(); // Consume invalid input
+                else {
+                    accountExistsFlag = false;
+                    System.out.println("Invalid User Name or Password, please try again.");
+                }
+            } while (accountExistsFlag == false);
+        }
+        else { //Account does not exist
+            userType = MusicUtility.readString("Do you want to create a regular account (R) or an Artist account (A)? (R/A): ");
+            if(userType.equals("R")) {  //Regular Account
+                accountID = userService.createUser();
+            } else {    //Artist Account
+                accountID = artistService.createArtist();
             }
+
         }
 
-
+        if(userType.equals("R")) {
+            userService.showUserMenu(accountID);
+        } else {
+            artistService.showArtistMenu(accountID);
+        }
     }
 }

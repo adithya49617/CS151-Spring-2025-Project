@@ -2,7 +2,11 @@ package service;
 
 import java.io.*;
 import java.util.*;
+
+import model.Artist;
 import model.User;
+import model.UserSong;
+import utility.MusicUtility;
 
 public class UserService {
     private List<User> users = new ArrayList<>();
@@ -20,11 +24,11 @@ public class UserService {
                 String[] userData = userRecordFromFile.split(",");
                 users.add(new User(
                         userData[0], //userId
-                        userData[1], //userDOB
+                        userData[1], //userPassword
                         userData[2], //userFirstName
                         userData[3], //userLastName
                         userData[4], //userEmail
-                        userData[5] //userGender
+                        userData[5] //userDOB
                 ));
             }
         } catch (IOException e) {
@@ -32,7 +36,7 @@ public class UserService {
         }
     }
 
-    // Save students to CSV data file
+    // Save users to CSV data file
     private void saveUsers() {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH))) {
             for (User user : users) {
@@ -45,34 +49,22 @@ public class UserService {
     }
 
     // Add a new user
-    public void addUser(Scanner scanner) {
-        System.out.print("Enter user ID: ");
-        String userID = scanner.nextLine();  //User ID
-
-        System.out.print("Enter user date of birth: ");
-        String userDob = scanner.nextLine();   //User DOB
-
-        System.out.print("Enter user fist name: ");
-        String userFirstName = scanner.nextLine();   //User First Name
-
-        System.out.print("Enter user last name: ");
-        String userLastName = scanner.nextLine();   //User Last Name
-
-        System.out.print("Enter user Email: ");
-        String userEmail = scanner.nextLine();   //User Email
-
-        System.out.print("Enter user gender: ");
-        String userGender = scanner.nextLine();   //User gender
-
-        users.add(new User(userID, userDob, userFirstName, userLastName, userEmail, userGender));
+    public String createUser() {
+        String userID = MusicUtility.readString("Enter user ID: "); //User ID
+        String userPassword = MusicUtility.readString("Enter user Password: "); //User Password
+        String userFirstName = MusicUtility.readString("Enter user fist name: "); //User First Name
+        String userLastName = MusicUtility.readString("Enter user last name: "); //User last Name
+        String userEmail = MusicUtility.readString("Enter user Email: "); //User Email
+        String userDob = MusicUtility.readString("Enter user date of birth: "); //User DOB
+        users.add(new User(userID, userPassword, userFirstName, userLastName, userEmail, userDob));
         saveUsers();
         System.out.println("User added successfully!");
+        return userID;
     }
 
     // Search user by ID
     public void searchUserById(Scanner scanner) {
-        System.out.print("Enter User ID: ");
-        String userId = scanner.nextLine();
+        String userId = MusicUtility.readString("Enter user ID: ");
 
         for (User tempUser : users) {
             if (tempUser.getUserId().equals(userId)) {
@@ -83,21 +75,25 @@ public class UserService {
         System.out.println("User not found.");
     }
 
+    // Check if user exists
+    public boolean checkUserExists(String userId) {
+        boolean exists = false;
+        for (User tempUser : users) {
+            if (tempUser.getUserId().equals(userId)) {
+                exists = true;
+                return exists;
+            }
+        }
+        return exists;
+    }
+
     // Update user
-    public void updateUser(Scanner scanner) {
-        System.out.print("Enter User ID to update: ");
-        String userId = scanner.nextLine();
-
+    public void updateUser(String userId) {
         for (User user : users) {
-            if (user.getUserId().equals(userId) ) {
-                System.out.print("Enter First Name to Update: ");
-                user.setUserFirstName(scanner.nextLine());
-
-                System.out.print("Enter Last Name to Update: ");
-                user.setUserLastName(scanner.nextLine());
-
-                System.out.print("Enter Email to Update: ");
-                user.setUserEmail(scanner.nextLine());
+            if (user.getUserId().equals(userId)) {
+                user.setUserFirstName(MusicUtility.readString("Enter First Name to update: "));
+                user.setUserLastName(MusicUtility.readString("Enter Last Name to update: "));
+                user.setUserEmail(MusicUtility.readString("Enter Email to update: "));
 
                 saveUsers();
                 System.out.println("User updated successfully!");
@@ -107,41 +103,86 @@ public class UserService {
         System.out.println("User not found.");
     }
 
-    public void manageUser() {
+    public void playSong( String userID) {
+        String songId = MusicUtility.readString("Enter song Id to play: ");
+        SongService songService = new SongService();
+        if(songService.checkSongExists( songId)){
+
+            UserSongService userPlayedSongService = new UserSongService();
+            if(!userPlayedSongService.checkUserPlayedSongExists( userID, songId)) {
+                userPlayedSongService.addUserPlayedSong(userID, songId);
+                System.out.println("Song played successfully!");
+            }
+        }
+    }
+
+    public void getSongsPlayedByUser(String userID) {
+        UserSongService userPlayedSongService = new UserSongService();
+        List<UserSong> userSongList = userPlayedSongService.getSongsPlayedByUser(userID);
+        SongService songService = new SongService();
+
+        for (UserSong userSong : userSongList) {
+            System.out.println(userSong.toString());
+        }
+    }
+
+    public void showSongCount() {
+        String songId = MusicUtility.readString("Enter song Id to get play count: ");
+        UserSongService userSongService = new UserSongService();
+        System.out.println("Played count: " + userSongService.getPlayCountForSong(songId));
+    }
+
+    public void searchSongs() {
+        SongService songService = new SongService();
+        String songText = MusicUtility.readString("Enter title/genre/artist to search: ");
+        songService.searchSongsByText(songText);
+    }
+
+    public void showUserMenu(String userId) {
         Scanner scanner = new Scanner(System.in);
         while (true) {
-            System.out.println("\n1. Manage User");
-            System.out.println("\n1. Add User");
-            System.out.println("2. Search User");
-            System.out.println("3. Update User");
-            System.out.println("4. Return to Main Menu\n");
-            System.out.print("Enter your choice: ");
+            System.out.println("\nActions");
+            System.out.println("--------------------------------");
+            System.out.println("1. Search Songs");
+            System.out.println("2. Play a Song");
+            System.out.println("3. Show play history");
+            System.out.println("4. Update User Details");
+            System.out.println("5. Show song play count");
+            System.out.println("6. Manage Playlist");
+            System.out.println("7. Manage Payments");
+            System.out.println("8. Return to Main Menu\n");
 
-            if (scanner.hasNextInt()) {
+            int userChoice = MusicUtility.readInt("Enter your choice: ");
 
-                int userChoice = scanner.nextInt();
-                scanner.nextLine();
-
-                switch (userChoice) {
-                    case 1:
-                        addUser(scanner);
-                        break;
-                    case 2:
-                        searchUserById(scanner);
-                        break;
-                    case 3:
-                        updateUser(scanner);
-                        break;
-                    case 4:
-                        System.out.println("Exiting from User Service");
-
-                        return;
-                    default:
-                        System.out.println("Invalid choice! Try again.");
-                }
-            } else {
-                System.out.println("Invalid input. Please enter a number.");
-                scanner.next(); // Consume invalid input
+            switch (userChoice) {
+                case 1:
+                    searchSongs();
+                    break;
+                case 2:
+                    playSong(userId);
+                    break;
+                case 3:
+                    getSongsPlayedByUser(userId);
+                    break;
+                case 4:
+                    updateUser(userId);
+                    break;
+                case 5:
+                    showSongCount();
+                    break;
+                case 6:
+                    PlaylistService playlistService = new PlaylistService();
+                    playlistService.managePlaylists(userId);
+                    break;
+                case 7:
+                    PaymentService paymentService = new PaymentService();
+                    paymentService.managePayments(userId);
+                    break;
+                case 8:
+                    System.out.println("Return to Main Menu\n");
+                    return;
+                default:
+                    System.out.println("Invalid choice! Try again.");
             }
         }
     }

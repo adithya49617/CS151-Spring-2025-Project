@@ -3,10 +3,17 @@ package service;
 import java.io.*;
 import java.util.*;
 import model.Song;
+import model.User;
+import model.UserSong;
 import service.ArtistService;
+import utility.MusicUtility;
+
 public class SongService {
     private List<Song> songs = new ArrayList<>();
     private static final String FILE_PATH = "src/data/songs.csv";
+
+    private List<UserSong> userSongs = new ArrayList<>();
+    private static final String USERSONGS_FILE_PATH = "src/data/userplayedsongs.csv";
 
     public SongService() {
         loadSongs();
@@ -43,53 +50,46 @@ public class SongService {
         }
     }
 
-    // Add a new song
-    public void addSong(Scanner scanner) {
-        ArtistService artistService = new ArtistService();
+    // Add a new song by Artist
+    public void addSong(String artistId) {
+        ArtistService aritstService = new ArtistService();
+        String songId = MusicUtility.readString("Enter Song ID: ");
+        String songTitle = MusicUtility.readString("Enter Song Title: ");
+        String songLength = MusicUtility.readString("Enter Song Length (mm:ss): ");
 
-        System.out.print("Enter Song ID: ");
-        String songId = scanner.nextLine();
-
-        System.out.print("Enter Song Title: ");
-        String songTitle = scanner.nextLine();
-
-        System.out.print("Enter Song Length (mm:ss): ");
-        String songLength = scanner.nextLine();
-
+        //checking if artist ID exists in artist csv file
         boolean artistCheck = true;
         String songArtist = null;
         while (artistCheck == true) {
-            System.out.print("Enter Artist ID: ");
-            songArtist = scanner.nextLine();
-            if (artistService.checkAritistExists(songArtist) == false) {
+            if (aritstService.checkAritistExists(artistId) == false) {
                 System.out.print("Artist ID does not exist. ");
                 artistCheck = true;
             } else {
                 artistCheck = false;
             }
         }
-
-
-        System.out.print("Enter Song Genre: ");
-        String songGenre = scanner.nextLine();
-
-        songs.add(new Song(songId, songTitle, songLength, songArtist, songGenre));
+        String songGenre = MusicUtility.readString("Enter Song Genre: ");
+        songs.add(new Song(songId, songTitle, songLength, artistId, songGenre));
         saveSongs();
         System.out.println("Song added successfully!");
     }
 
     // Delete a song by ID
-    public void deleteSong(Scanner scanner) {
-        System.out.print("Enter Song ID to delete: ");
-        String songId = scanner.nextLine();
+    public void deleteSong(String artistId) {
+        String songId = MusicUtility.readString("Enter Song ID: ");
 
         Iterator<Song> iterator = songs.iterator();
         while (iterator.hasNext()) {
             Song song = iterator.next();
-            if (song.getSongId().equals(songId)) {
-                iterator.remove();
-                saveSongs();
-                System.out.println("Song deleted successfully!");
+            if (song.getSongArtist().equals(artistId)) {
+                if (song.getSongId().equals(songId)) {
+                    iterator.remove();
+                    saveSongs();
+                    System.out.println("Song deleted successfully!");
+                    return;
+                }
+            } else {
+                System.out.println("This song does not belong to this artist!");
                 return;
             }
         }
@@ -97,23 +97,15 @@ public class SongService {
     }
 
     // Edit all song details
-    public void editSong(Scanner scanner) {
-        System.out.print("Enter Song ID to edit: ");
-        String songId = scanner.nextLine();
+    public void editSong(String artistId) {
+        String songId = MusicUtility.readString("Enter Song ID to edit: ");
 
         for (Song song : songs) {
             if (song.getSongId().equals(songId)) {
-                System.out.print("Enter new Song Title: ");
-                song.setSongTitle(scanner.nextLine());
-
-                System.out.print("Enter new Song Length: ");
-                song.setSongLength(scanner.nextLine());
-
-                System.out.print("Enter new Song Artist: ");
-                song.setSongArtist(scanner.nextLine());
-
-                System.out.print("Enter new Song Genre: ");
-                song.setSongGenre(scanner.nextLine());
+                song.setSongTitle(MusicUtility.readString("Enter new Song Title: "));
+                song.setSongTitle(MusicUtility.readString("Enter new Song Length: "));
+                song.setSongTitle(artistId);
+                song.setSongTitle(MusicUtility.readString("Enter new Song Genre: "));
 
                 saveSongs();
                 System.out.println("Song updated successfully!");
@@ -125,13 +117,10 @@ public class SongService {
 
     // Rename only the song title
     public void renameSong(Scanner scanner) {
-        System.out.print("Enter Song ID to rename: ");
-        String songId = scanner.nextLine();
-
+        String songId = MusicUtility.readString("Enter Song ID to rename: ");
         for (Song song : songs) {
             if (song.getSongId().equals(songId)) {
-                System.out.print("Enter new Song Title: ");
-                song.setSongTitle(scanner.nextLine());
+                song.setSongTitle(MusicUtility.readString("Enter new Song Title: "));
                 saveSongs();
                 System.out.println("Song title updated successfully!");
                 return;
@@ -140,45 +129,71 @@ public class SongService {
         System.out.println("Song not found.");
     }
 
+    // Check if Song exists
+    public boolean checkSongExists(String songId) {
+        boolean exists = false;
+        for (Song tempSong : songs) {
+            if (tempSong.getSongId().equals(songId)) {
+                exists = true;
+                return exists;
+            }
+        }
+        return exists;
+    }
+
+    public void searchSongsByText(String searchText) {
+        for (Song tempSong : songs) {
+            if (tempSong.getSongArtist().contains(searchText) ||
+                    tempSong.getSongGenre().contains(searchText) ||
+                    tempSong.getSongTitle().contains(searchText) )
+            {
+                System.out.println(tempSong);
+            }
+        }
+    }
+
+    public void searchSongsByID(String songId) {
+        for (Song tempSong : songs) {
+            if (tempSong.getSongId().equals(songId))
+            {
+                System.out.println(tempSong);
+            }
+        }
+    }
+
+
     // Menu to manage songs
-    public void manageSongs() {
+    public void manageSongs(String artistID) {
         Scanner scanner = new Scanner(System.in);
         while (true) {
-            System.out.println("\n--- Song Management ---");
+            System.out.println("\nManage Song");
+            System.out.println("--------------------------------");
             System.out.println("1. Add Song");
             System.out.println("2. Delete Song");
             System.out.println("3. Edit Song");
             System.out.println("4. Rename Song Title");
             System.out.println("5. Return to Main Menu");
-            System.out.print("Enter your choice: ");
 
-            if (scanner.hasNextInt()) {
-                int choice = scanner.nextInt();
-                scanner.nextLine(); // consume newline
-
-                switch (choice) {
-                    case 1:
-                        addSong(scanner);
-                        break;
-                    case 2:
-                        deleteSong(scanner);
-                        break;
-                    case 3:
-                        editSong(scanner);
-                        break;
-                    case 4:
-                        renameSong(scanner);
-                        break;
-                    case 5:
-                        System.out.println("Exiting Song Service...");
-                        return;
-                    default:
-                        System.out.println("Invalid choice. Try again.");
+            int choice = MusicUtility.readInt("Enter your choice: ");
+            switch (choice) {
+                case 1:
+                    addSong(artistID);
+                    break;
+                case 2:
+                    deleteSong(artistID);
+                    break;
+                case 3:
+                    editSong(artistID);
+                    break;
+                case 4:
+                    renameSong(scanner);
+                    break;
+                case 5:
+                    System.out.println("Exiting Song Service...");
+                    return;
+                default:
+                    System.out.println("Invalid choice. Try again.");
                 }
-            } else {
-                System.out.println("Invalid input. Please enter a number.");
-                scanner.next(); // consume invalid token
-            }
         }
     }
 }

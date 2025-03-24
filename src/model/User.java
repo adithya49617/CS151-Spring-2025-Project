@@ -2,19 +2,20 @@ package model;
 
 public class User {
     private String userId;
-    private String userDOB;
+    private String userPassword;
     private String userFirstName;
     private String userLastName;
     private String userEmail;
-    private String userGender;
+    private String userDOB;
 
-    public User(String userId, String userDOB, String userFirstName, String userLastName, String userEmail, String userGender) {
+
+    public User(String userId, String userPassword,  String userFirstName, String userLastName, String userEmail, String userDOB) {
         this.userId = userId;
-        this.userDOB = userDOB;
+        this.userPassword = userPassword;
         this.userFirstName = userFirstName;
         this.userLastName = userLastName;
         this.userEmail = userEmail;
-        this.userGender = userGender;
+        this.userDOB = userDOB;
     }
 
     public String getUserId() {
@@ -57,23 +58,22 @@ public class User {
         this.userEmail = userEmail;
     }
 
-    public String getUserGender() {
-        return userGender;
+    public String getUserPassword() {
+        return userPassword;
     }
 
-    public void setUserGender(String userGender) {
-        this.userGender = userGender;
+    public void setUserPassword(String userPassword) {
+        this.userPassword = userPassword;
     }
-
 
     @Override
     public String toString() {
         return userId +
-                "," + userDOB +
+                "," + userPassword +
                 "," + userFirstName +
                 "," + userLastName +
-                "," + userEmail +
-                "," + userGender +
-                '}';
+                "," + userEmail
+                + "," + userDOB;
+
     }
 }
